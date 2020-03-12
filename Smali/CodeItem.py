@@ -238,7 +238,7 @@ class CodeItem:
             elif(c == 0x2a):
                 A, readBytes = self.__getArguments('30t', bytecode[i:])
                 codeString += 'goto/32 +' + str(A)
-             elif(c == 0x2b):
+            elif(c == 0x2b):
                 #TODO: implement parser for the sparse-switch-payload item, and update codeString accordingly
                 A, B, readBytes = self.__getArguments('31t', bytecode[i:])
                 codeString += 'packed-switch +' + self.resolveParams(A) + ', +' + str(B)
