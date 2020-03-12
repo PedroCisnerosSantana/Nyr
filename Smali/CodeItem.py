@@ -306,7 +306,35 @@ class CodeItem:
                 A, B, readBytes = self.__getArguments('12x', bytecode[i:])
                 codeString += ['add-int/2addr', 'sub-int/2addr', 'mul-int/2addr', 'div-int/2addr', 'rem-int/2addr', 'and-int/2addr', 'or-int/2addr', 'xor-int/2addr', 'shl-int/2addr', 'shr-int/2addr', 'ushr-int/2addr', 'add-long/2addr', 'sub-long/2addr', 'mul-long/2addr', 'div-long/2addr', 'rem-long/2addr', 'and-long/2addr', 'or-long/2addr', 'xor-long/2addr', 'shl-long/2addr', 'shr-long/2addr', 'ushr-long/2addr', 'add-float/2addr', 'sub-float/2addr', 'mul-float/2addr', 'div-float/2addr', 'rem-float/2addr', 'add-double/2addr', 'sub-double/2addr', 'mul-double/2addr', 'div-double/2addr', 'rem-double/2addr'][c - 0xb0]
                 codeString += ' ' + ', '.join(self.resolveParams(p) for p in [A, B])
-            #TODO d0..d7, d8..e2, e3..f9, fa, fb
+            elif (0xd0 <= c and c <= 0xd7):
+                A, B, C, readBytes = self.__getArguments('22s', bytecode[i:])
+                codeString += ['add-int/lit16', 'rsub-int', 'mul-int/lit16', 'div-int/lit16', 'rem-int/lit16', 'and-int/lit16', 'or-int/lit16', 'xor-int/lit16']
+                codeString += ' ' + ', '.join(self.resolveParams(p) for p in [A, B, C])
+            elif (0xd8 <= c and 0xe2 <= c):
+                A, B, C, readBytes = self.__getArguments('22b', bytecode[i:])
+                codestring += ['add-int/lit8', 'rsub-int/lit8', 'mul-int/lit8', 'div-int/lit8', 'rem-int/lit8', 'and-int/lit8', 'or-int/lit8', 'xor-int/lit8', 'shl-int/lit8', 'shr-int/lit8', 'ushr-int/lit8']
+                codestring += ' ' + ', '.join(self.resolveParams(p) for p in [A, B, C])
+            elif (c == 0xfa):
+                A, B, C, D, E, F, G, H, readBytes = self.__getArguments('45cc', bytecode[i:])
+                codestring += 'invoke-polymorphic'
+                codestring += ' {' + ', '.join(self.resolveParams(p) for p in [C, D, E, F, G, H][:A]) + '}, '
+                method = self.methodResolver(B)
+                methodClass = method.classId.decode(self.encoding)
+                methodParameters = list(map(lambda x: x.decode(self.encoding), method.proto.parameters))
+                returnType = methos.proto.returnType.decode(self.encoding)
+                codestring += methodClass + '->' + method.name.decode(self.encoding) + '(' + ''.join(methodClass) + ')' + returnType
+            elif (c == 0xfb):
+                arguments = self.__getArguments('4rcc', bytecode[i:])
+                A, B, C = arguments[0:3]
+                nargs = arguments[3:-1]
+                readBytes = arguments[-1]
+                codeString += 'invoke-polymorphic/range'
+                codeString += ' {' + self.resolveParams(C) + ', '.join(self.resolveParams(p) for p in nargs) + '}, '
+                method = self.methodResolver(B)
+                methodClass = method.classId.decode(self.encoding)
+                methodParameters = list(map(lambda x: x.decode(self.encoding), method.proto.parameters))
+                returnType = method.proto.returnType.decode(self.encoding)
+                codeString += methodClass + '->' + method.name.decode(self.encoding) + '(' + ''.join(methodParameters) + ')' + returnType
             elif(c == 0xfc):
                 A, B, C, D, E, F, G, readBytes = self.__getArguments('35c', bytecode[i:])
                 codeString += 'invoke-custom'
