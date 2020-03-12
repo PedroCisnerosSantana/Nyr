@@ -322,7 +322,7 @@ class Dex:
         res = 'Magic: '
         magic = self.getMagic()
         if(magic[:4] == b'dex\n'):
-            res += 'dex\\n\n'
+            res += 'dex\n'
         else:
             res += str(magic[:4]) + '  WARNING: corrupted magic, left raw\n'
         res += 'Version: '
